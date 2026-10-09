@@ -1,0 +1,52 @@
+Build Docker Image
+docker build -t aws-application-demo:latest .
+Builds the Spring Boot application into a local Docker image.
+Use this before running locally or deploying to a local cluster.
+Run Docker Container
+docker run --rm -p 8080:8080 aws-application-demo:latest
+Runs the application container and maps its port 8080 to your machine.
+Access /hello and /actuator/health through http://localhost:8080.
+Apply Raw Kubernetes Manifests
+kubectl apply -f k8s/
+Creates or updates the ConfigMap, Deployment, Service, and HPA from the YAML files.
+Use this approach when not deploying through Helm.
+Restart Kubernetes Deployment
+kubectl rollout restart deployment/aws-application-demo
+Restarts all pods managed by aws-application-demo using a rolling update.
+Use it to apply changes such as refreshed ConfigMap values or a newly available image tag.
+Validate Helm Chart
+helm lint .\helm\aws-application-demo
+Checks the Helm chart for common structural and template issues.
+Run it before installing or packaging the chart.
+Preview Helm Resources
+helm template aws-demo .\helm\aws-application-demo
+Renders the Kubernetes YAML Helm would create without applying it.
+Useful for reviewing values, names, labels, and manifests.
+Install Helm Chart
+helm install aws-demo .\helm\aws-application-demo
+Deploys the application using the local Docker image defaults.
+Creates the Deployment, Service, ConfigMap, and HPA.
+Create Helm chart: helm create <chart-name> — creates the standard Helm chart directory structure and default templates.
+Delete Helm release: helm uninstall <release-name> — removes the deployed Helm release and its Kubernetes resources.
+Upgrade helm release: helm upgrade --install aws-demo .\helm\aws-application-demo
+
+Access Application from Local Machine
+kubectl port-forward service/aws-demo-aws-application-demo 8080:8080
+Forwards the Kubernetes Service port to localhost:8080.
+Then open http://localhost:8080/hello.
+Start MiniKube with docker image
+minikube start --driver=docker
+Enable ingress in Minikube
+minikube addons enable ingress
+Load Image into Minikube
+minikube image load aws-application-demo:latest
+Copies the locally built Docker image into the Minikube cluster.
+Required if Minikube cannot see your host Docker images.
+Load Image into kind
+kind load docker-image aws-application-demo:latest
+Copies the local image into a kind Kubernetes cluster.
+Run it before the Helm install when using kind.
+Run Maven Tests
+mvn test
+Runs the Spring Boot endpoint tests, including /hello and health checks.
+Maven must be installed and available in your system PATH.

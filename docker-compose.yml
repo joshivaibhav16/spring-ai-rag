@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  pgvector:
+    build: .
+    container_name: pgvector_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pgvector}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - pgvector_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgvector_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - pgvector
+    networks:
+      - pgvector_network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/misc/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgvector_data:
+  pgadmin_data:
+
+networks:
+  pgvector_network:
+    driver: bridge
